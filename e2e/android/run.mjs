@@ -1,7 +1,7 @@
 // Android 模拟器端到端：真实 App（WebView + Rust relay + Worker 内 game.wasm）开房，
 // runner 上的 Chrome 扮演扫码访客，经 adb 端口转发连入，完整下一局五子棋。
 // 用法（在 android-emulator-runner 的 script 中）：node e2e/android/run.mjs <apk>
-import { chromium } from '@playwright/test';
+import { _android, chromium } from '@playwright/test';
 import { execSync } from 'node:child_process';
 import { mkdirSync, writeFileSync, appendFileSync } from 'node:fs';
 import path from 'node:path';
@@ -61,22 +61,15 @@ try {
   await sleep(4000);
   sh(`adb exec-out screencap -p > ${OUT}/1-launch.png`);
 
-  // 找到 WebView 调试套接字并转发
-  const sock = await retry(() => {
-    const pid = sh(`adb shell pidof ${PKG}`);
-    const unix = sh('adb shell cat /proc/net/unix');
-    const names = [...unix.matchAll(/@(webview_devtools_remote_\d+)/g)].map((m) => m[1]);
-    const name = names.find((n) => n.endsWith(`_${pid}`)) ?? names[0];
-    if (!name) throw new Error('no devtools socket yet');
-    return name;
-  });
-  sh(`adb forward tcp:9222 localabstract:${sock}`);
-  const host = await retry(() => chromium.connectOverCDP('http://127.0.0.1:9222'), 20);
-  const page = await retry(async () => {
-    const p = host.contexts().flatMap((c) => c.pages()).find((p) => /localhost/.test(p.url()));
-    if (!p) throw new Error('no app page');
-    return p;
-  });
+  // 经 Playwright 的 Android 支持连接 App 内 WebView（WebView 的调试端点不支持浏览器级上下文管理，
+  // 不能用 connectOverCDP）
+  const [device] = await retry(async () => {
+    const ds = await _android.devices();
+    if (!ds.length) throw new Error('no adb device');
+    return ds;
+  }, 20);
+  const webview = await device.webView({ pkg: PKG }, { timeout: 60000 });
+  const page = await webview.page();
   log(`host page: ${page.url()}`);
 
   // 主机：开房
@@ -130,6 +123,7 @@ try {
     }
   } catch {}
   await guestBrowser?.close().catch(() => {});
+  await _android.devices().then((ds) => Promise.all(ds.map((d) => d.close()))).catch(() => {});
   const md = ['### Android 模拟器端到端', '', ...summary.map((s) => `- ${s}`), ''].join('\n');
   if (process.env.GITHUB_STEP_SUMMARY) appendFileSync(process.env.GITHUB_STEP_SUMMARY, md + '\n');
   process.exit(process.exitCode ?? 0);
