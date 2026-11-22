@@ -1,8 +1,14 @@
 #!/usr/bin/env bash
 # 低优先级执行（共享 / 小规格机器上编译不抢占其他服务）：CPU 上限 200% + nice + ionice。
-# 用法：scripts/lp <命令...>
+# CI runner 是独占机器，直接运行。用法：scripts/lp <命令...>
 set -euo pipefail
+if [ -n "${CI:-}" ]; then
+  exec "$@"
+fi
 if command -v systemd-run >/dev/null && systemd-run --user --scope -q -p CPUQuota=200% true 2>/dev/null; then
   exec systemd-run --user --scope -q -p CPUQuota=200% nice -n19 ionice -c3 "$@"
 fi
-exec nice -n19 ionice -c3 "$@"
+if command -v ionice >/dev/null; then
+  exec nice -n19 ionice -c3 "$@"
+fi
+exec nice -n19 "$@"
