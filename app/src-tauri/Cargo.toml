@@ -11,6 +11,11 @@ publish = false
 name = "offtable_app_lib"
 crate-type = ["staticlib", "cdylib", "rlib"]
 
+[features]
+# 仅 CI 模拟器端到端测试使用：release 包也开启 WebView 调试，供 Playwright 经 CDP 驱动主机页面。
+# 发布包绝不开启。
+e2e-devtools = ["tauri/devtools"]
+
 [build-dependencies]
 tauri-build = { version = "=2.7.6", features = [] }
 

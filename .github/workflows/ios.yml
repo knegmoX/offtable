@@ -58,6 +58,19 @@ jobs:
           du -sh "$APP"
           mkdir -p out && ditto -c -k --keepParent "$APP" out/offtable-ios-sim-debug.zip
           { echo "### iOS 模拟器构建"; echo; echo "- .app（debug-iphonesimulator）：$(du -sh "$APP" | cut -f1)"; } >> "$GITHUB_STEP_SUMMARY"
+      - name: 模拟器冒烟（安装、启动、截图）
+        run: |
+          APP=$(find ~/Library/Developer/Xcode/DerivedData -path '*iphonesimulator*' -name '*.app' -maxdepth 7 | head -1)
+          UDID=$(xcrun simctl list devices available -j | python3 -c "import sys,json; d=json.load(sys.stdin)['devices']; print(next(x['udid'] for k,v in d.items() if 'iOS' in k for x in v if 'iPhone' in x['name']))")
+          xcrun simctl boot "$UDID"
+          xcrun simctl bootstatus "$UDID" -b
+          xcrun simctl install "$UDID" "$APP"
+          BID=$(/usr/libexec/PlistBuddy -c 'Print CFBundleIdentifier' "$APP/Info.plist")
+          xcrun simctl launch "$UDID" "$BID"
+          sleep 12
+          mkdir -p out
+          xcrun simctl io "$UDID" screenshot out/ios-launch.png
+          xcrun simctl spawn "$UDID" launchctl list | grep -q "$BID" && echo "✅ $BID 运行中" | tee -a "$GITHUB_STEP_SUMMARY"
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
         with:
           name: ios-sim-${{ github.sha }}

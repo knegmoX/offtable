@@ -12,3 +12,4 @@ dist/
 /.secrets/
 /dist-test/
 /docs/internal/
+/e2e/android-results/
