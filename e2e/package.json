@@ -1,0 +1,7 @@
+{
+  "name": "offtable-e2e",
+  "private": true,
+  "type": "module",
+  "scripts": { "test": "playwright test" },
+  "devDependencies": { "@playwright/test": "^1.65.1", "@types/node": "^24.0.0" }
+}

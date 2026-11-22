@@ -1,0 +1,11 @@
+[package]
+name = "offtable-ai"
+description = "Generic game-tree search (iterative-deepening alpha-beta under a node budget) and human-like move selection"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+rust-version.workspace = true
+publish.workspace = true
+
+[dependencies]
+offtable-core.workspace = true

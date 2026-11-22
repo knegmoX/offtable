@@ -1,0 +1,62 @@
+name: ios
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ios-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  simulator:
+    name: iOS 模拟器构建（未签名）
+    runs-on: macos-26
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+      - uses: dtolnay/rust-toolchain@b725eda525362e7cf34af9a7243cac1e3f01a7ec # stable
+        with:
+          targets: wasm32-unknown-unknown, aarch64-apple-ios, aarch64-apple-ios-sim
+      - uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6
+        with:
+          workspaces: |
+            . -> target
+            app/src-tauri -> target
+      - uses: pnpm/action-setup@73e46992e05b19abd31f2f3c20e0e7370d762115 # v6.1.1
+        with:
+          version: 10
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version: 24
+      - name: 工具
+        run: |
+          xcodebuild -version
+          brew install xcodegen || true
+          tools/ci/install-wasm-tools.sh "$HOME/.local/bin"
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+      - name: 构建 game.wasm + Web
+        run: |
+          scripts/build-wasm.sh
+          cd web && pnpm install --frozen-lockfile && pnpm build
+      - name: Tauri iOS 初始化与模拟器构建
+        working-directory: app
+        run: |
+          pnpm install --frozen-lockfile
+          pnpm tauri ios init --ci
+          pnpm tauri ios build --debug --target aarch64-sim --ci
+      - name: 产物
+        run: |
+          find app/src-tauri/gen/apple -name '*.app' -maxdepth 6 -print -exec du -sh {} \; || true
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
+        with:
+          name: ios-sim-${{ github.sha }}
+          path: app/src-tauri/gen/apple/build
+          if-no-files-found: warn
+          retention-days: 7

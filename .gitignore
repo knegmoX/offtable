@@ -1,0 +1,14 @@
+/target
+node_modules/
+dist/
+/web/src/wasm/pkg/
+*.log
+.DS_Store
+/app/src-tauri/gen/android/.gradle
+/app/src-tauri/gen/android/build
+/app/src-tauri/gen/android/app/build
+/e2e/test-results/
+/e2e/playwright-report/
+/.secrets/
+/dist-test/
+/docs/internal/

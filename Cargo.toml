@@ -1,0 +1,57 @@
+[workspace]
+resolver = "3"
+exclude = ["app/src-tauri"]
+members = [
+  "crates/core",
+  "crates/ai",
+  "crates/protocol",
+  "crates/relay",
+  "crates/wasm",
+  "crates/games/gomoku",
+]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2024"
+license = "MPL-2.0"
+rust-version = "1.88"
+publish = false
+
+[workspace.dependencies]
+offtable-core = { path = "crates/core" }
+offtable-ai = { path = "crates/ai" }
+offtable-protocol = { path = "crates/protocol" }
+offtable-gomoku = { path = "crates/games/gomoku" }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+rand_core = { version = "0.10", default-features = false }
+rand_chacha = { version = "0.10", default-features = false }
+proptest = "1"
+
+# 本机默认 release：体积优先、快速编译（经 scripts/lp 运行）
+[profile.release]
+opt-level = "s"
+lto = "thin"
+codegen-units = 16
+strip = true
+
+# CI 发版 / 移动端：最小体积
+[profile.dist]
+inherits = "release"
+lto = "fat"
+codegen-units = 1
+
+# 浏览器 / WebView 内的 game.wasm
+[profile.wasm]
+inherits = "release"
+lto = "fat"
+codegen-units = 1
+panic = "abort"
+# 保留 target_features 段给 wasm-bindgen，体积由之后的 wasm-opt -Oz 处理
+strip = false
+debug = false
+
+[profile.wasm.package.offtable-ai]
+opt-level = 3
+[profile.wasm.package.offtable-gomoku]
+opt-level = 3

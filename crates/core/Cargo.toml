@@ -1,0 +1,14 @@
+[package]
+name = "offtable-core"
+description = "Shared game abstractions: rules, per-seat views, deterministic RNG, type-erased sessions"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+rust-version.workspace = true
+publish.workspace = true
+
+[dependencies]
+serde.workspace = true
+serde_json.workspace = true
+rand_core.workspace = true
+rand_chacha.workspace = true

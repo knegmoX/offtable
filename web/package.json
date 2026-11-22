@@ -1,0 +1,24 @@
+{
+  "name": "offtable-web",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build && vite build --config vite.guest.config.ts",
+    "typecheck": "tsc --noEmit -p . && tsc --noEmit -p tsconfig.node.json"
+  },
+  "dependencies": {
+    "@preact/signals": "^2.11.4",
+    "@tauri-apps/api": "2.12.5",
+    "preact": "^11.2.0",
+    "uqr": "^0.1.3"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.28.0",
+    "@preact/preset-vite": "^2.10.6",
+    "@types/node": "^26.6.6",
+    "typescript": "^7.0.2",
+    "vite": "^8.3.8"
+  }
+}

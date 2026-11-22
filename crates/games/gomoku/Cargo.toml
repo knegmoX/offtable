@@ -1,0 +1,17 @@
+[package]
+name = "offtable-gomoku"
+description = "Gomoku (five in a row) rules and AI"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+rust-version.workspace = true
+publish.workspace = true
+
+[dependencies]
+offtable-core.workspace = true
+offtable-ai.workspace = true
+serde.workspace = true
+
+[dev-dependencies]
+serde_json.workspace = true
+proptest.workspace = true
