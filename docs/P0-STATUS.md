@@ -14,14 +14,18 @@
 | **Android arm64 包体** | **APK 7.48 MB（压缩后约 2.9 MB）**，.so 5.8 MB，16 KB 页对齐 ✅（预算：下载 ≤6 MB） |
 | AI 时延（开发服务器） | 困难档 native p95 134 ms，wasm(V8) p95 157 ms；低端机需实测（门槛 p95 ≤1.5 s） |
 
-测试安装包：`dist-test/offtable-p0-arm64.apk`（测试密钥签名，**不是**发版密钥）。
+| **CI（公开仓库 GitHub Actions，全部免费）** | ✅ ci（Rust + Web + 体积预算 + e2e）、android（分 ABI APK + AAB，arm64 APK 7.2 MB / 压缩约 2.9 MB）、ios（macos-26 模拟器构建 + 启动截图）、**android-e2e** |
+| **Android 模拟器端到端** | ✅ 真实 App（WebView + App 内 Rust relay + Worker 内 game.wasm）开房，runner 上的 Chrome 扮演扫码访客经 adb 转发加入，完整对局通过 |
+
+测试安装包：每次 CI 构建的 Actions 产物（测试签名）；本地另有 `dist-test/offtable-p0-arm64.apk`（测试密钥签名，**不是**发版密钥）。
 
 ## 未完成 / 需要真机或账号
 | 项 | 阻塞 |
 |---|---|
 | 冷启动、低端机 AI 时延、三种网络 × 20 次联机成功率、30 分钟稳定性 | 真机：见 [P0-DEVICE-CHECKLIST.md](P0-DEVICE-CHECKLIST.md) |
-| iOS 构建 / TestFlight / iOS 包体 | Apple 开发者账号 + macOS runner |
-| CI（构建 Android APK/AAB、iOS 模拟器包） | GitHub Actions（公开仓库）；上架内测轨需 Play / Apple 账号 |
+| iOS 真机包 / TestFlight / 发版包体 | Apple 开发者账号（模拟器构建已在 CI 通过） |
+| 上架内测轨（Play 内部测试 / TestFlight） | Play / Apple 账号 |
+| 云真机兼容性（国产 ROM WebView） | 见 [CLOUD-TESTING.md](CLOUD-TESTING.md)：WeTest 首次免费、Firebase Test Lab 免费额度 |
 | platform 插件（屏幕常亮、分享、评分、LocalOnlyHotspot、本地网络权限） | 未开始（下一步） |
 | 主机恢复（快照落盘、App 重启续局）、App 切后台时通知访客"房主暂离" | 未开始（下一步） |
 | 精简 classes.dex（去掉模板里的 Material 依赖，约可省 0.5–1 MB） | 优化项，非阻塞 |

@@ -54,6 +54,7 @@ export function GomokuBoard({ view, canPlay, busy = false, onPlay }: Props) {
   const svgRef = useRef<SVGSVGElement>(null);
   const [cursor, setCursor] = useState<Pt>({ x: (n - 1) >> 1, y: (n - 1) >> 1 });
   const [focused, setFocused] = useState(false);
+  const [keyboard, setKeyboard] = useState(false); // 只在键盘操作时显示光标框
 
   const cellAt = (p: Pt) => view.board[p.y * n + p.x];
 
@@ -64,6 +65,7 @@ export function GomokuBoard({ view, canPlay, busy = false, onPlay }: Props) {
   };
 
   const onPointer = (e: PointerEvent) => {
+    setKeyboard(false);
     const svg = svgRef.current;
     if (!svg) return;
     const ctm = svg.getScreenCTM();
@@ -75,6 +77,7 @@ export function GomokuBoard({ view, canPlay, busy = false, onPlay }: Props) {
   };
 
   const onKey = (e: KeyboardEvent) => {
+    setKeyboard(true);
     const d: Record<string, [number, number]> = {
       ArrowUp: [0, -1],
       ArrowDown: [0, 1],
@@ -160,7 +163,7 @@ export function GomokuBoard({ view, canPlay, busy = false, onPlay }: Props) {
             opacity={0.85}
           />
         )}
-        {focused && (
+        {focused && keyboard && (
           <rect
             x={pad + cursor.x * CELL - CELL / 2}
             y={pad + cursor.y * CELL - CELL / 2}
