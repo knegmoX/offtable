@@ -51,12 +51,15 @@ jobs:
           pnpm install --frozen-lockfile
           pnpm tauri ios init --ci
           pnpm tauri ios build --debug --target aarch64-sim --ci
-      - name: 产物
+      - name: 产物（模拟器 .app，调试构建，体积仅供参考）
         run: |
-          find app/src-tauri/gen/apple -name '*.app' -maxdepth 6 -print -exec du -sh {} \; || true
+          APP=$(find ~/Library/Developer/Xcode/DerivedData -path '*iphonesimulator*' -name '*.app' -maxdepth 7 | head -1)
+          echo "app: $APP"
+          du -sh "$APP"
+          mkdir -p out && ditto -c -k --keepParent "$APP" out/offtable-ios-sim-debug.zip
+          { echo "### iOS 模拟器构建"; echo; echo "- .app（debug-iphonesimulator）：$(du -sh "$APP" | cut -f1)"; } >> "$GITHUB_STEP_SUMMARY"
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
         with:
           name: ios-sim-${{ github.sha }}
-          path: app/src-tauri/gen/apple/build
-          if-no-files-found: warn
+          path: out/
           retention-days: 7
